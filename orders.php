@@ -32,7 +32,8 @@ $orders = $stmt->fetchAll();
                             <th>Địa chỉ</th>
                             <th>Sản phẩm</th>
                             <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
+                            <th>Thanh toán</th>
+                            <th>Trạng thái giao hàng</th>
                             <th>Ngày đặt hàng</th>
                         </tr>
                     </thead>
@@ -59,6 +60,7 @@ $orders = $stmt->fetchAll();
                                     ?>
                                 </td>
                                 <td><?= htmlspecialchars($order['status']); ?></td>
+                                <td><?= htmlspecialchars($order['payment_status']); ?></td>
                                 <td><?= htmlspecialchars($order['created_at']); ?></td>
                             </tr>
                         <?php endforeach; ?>

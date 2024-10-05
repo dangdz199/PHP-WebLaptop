@@ -29,6 +29,11 @@ if (isset($_POST['action'])) {
         $status = $_POST['status'];
         $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
         $stmt->execute([$status, $id]);
+    } elseif ($_POST['action'] == 'update' && isset($_POST['id']) && isset($_POST['payment_status'])) {
+        $id = $_POST['id'];
+        $payment_status =  $_POST['payment_status'];
+        $stmt = $pdo->prepare("UPDATE orders SET payment_status = ? WHERE id = ?");
+        $stmt->execute([$payment_status, $id]);
     }
 }
 
@@ -255,7 +260,7 @@ $page = $_GET['page'] ?? 'orders';
                 <div class="card mb-3">
                     <div class="card-body">
                         <h4 class="card-title">Sản phẩm bán chạy</h4>
-                        <canvas id="topProductsChart"></canvas> <!-- Nơi để vẽ biểu đồ -->
+                        <canvas id="topProductsChart" height="70"></canvas> <!-- Nơi để vẽ biểu đồ -->
                     </div>
                 </div>
 
@@ -278,16 +283,29 @@ $page = $_GET['page'] ?? 'orders';
             </div>
 
             <!-- Biểu đồ đường cho doanh thu hàng tháng -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h4 class="card-title">Doanh thu hàng tháng</h4>
-                    <canvas id="monthlyRevenueChart"></canvas> <!-- Nơi để vẽ biểu đồ -->
-                </div>
-            </div>
+            
         </div>
 
         </div>
+        <?php
+
+        $monthlyData = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Tạo mảng labels và dữ liệu doanh thu
+        $monthlyLabels = [];
+        $monthlyRevenue = [];
+
+        foreach ($monthlyData as $row) {
+            $monthlyLabels[] = 'Tháng ' . $row['month'];
+            $monthlyRevenue[] = $row['revenue'];
+        }
+
+        // Chuyển đổi sang JSON để sử dụng trong JavaScript
+        $monthlyLabels = json_encode($monthlyLabels);
+        $monthlyRevenue = json_encode($monthlyRevenue);
+        ?>
         <script>
+
             // Dữ liệu cho sản phẩm bán chạy
             const topProducts = <?= json_encode(array_column($topProducts, 'name')) ?>;
             const topProductsSales = <?= json_encode(array_column($topProducts, 'quantity')) ?>;
@@ -315,9 +333,8 @@ $page = $_GET['page'] ?? 'orders';
                 }
             });
 
-            // Dữ liệu giả cho doanh thu hàng tháng
-            const monthlyLabels = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
-            const monthlyRevenue = [1200, 1900, 3000, 5000, 2400, 3200, 4300, 2100, 3700, 4500, 2900, 3200]; // Dữ liệu doanh thu mẫu
+            const monthlyLabels = <?= $monthlyLabels ?>;
+            const monthlyRevenue = <?= $monthlyRevenue ?>;
 
             // Cấu hình biểu đồ đường cho doanh thu hàng tháng
             const ctxMonthlyRevenue = document.getElementById('monthlyRevenueChart').getContext('2d');
@@ -341,6 +358,7 @@ $page = $_GET['page'] ?? 'orders';
                     }
                 }
             });
+
         </script>
 
         <!-- Sản phẩm bán chạy -->
@@ -359,7 +377,8 @@ $page = $_GET['page'] ?? 'orders';
                         <th>Tất cả Sản phẩm</th>
                         <th>Phương thức thanh toán</th>
                         <th>Tổng cộng</th>
-                        <th>Trạng thái</th>
+                        <th>Trạng thái thanh toán</th>
+                        <th>Trạng thái giao hàng</th>
                         <th>Ngày tạo</th>
                         <th>Hành động</th>
                     </tr>
@@ -371,9 +390,6 @@ $page = $_GET['page'] ?? 'orders';
                             <td><?php echo htmlspecialchars($row['email']); ?></td>
                             <td><?php echo htmlspecialchars($row['address']); ?></td>
                             <td><?php
-                            // echo htmlspecialchars($row['all_products']); 
-                            // all_products là một chuỗi JSON, chứa thông tin của tất cả sản phẩm trong đơn hàng
-                            // Để hiển thị thông tin sản phẩm, bạn cần giải mã chuỗi JSON này
                             $products = json_decode($row['all_products'], true);
                             foreach ($products as $product) {
                                 echo '<li>' . $product['name'] . ' x ' . $product['quantity'] . '</li>';
@@ -404,6 +420,23 @@ $page = $_GET['page'] ?? 'orders';
                                             echo 'selected'; ?>>
                                             Hoàn thành</option>
                                         <option value="Cancelled" <?php if ($row['status'] == 'Cancelled')
+                                            echo 'selected'; ?>>Đã
+                                            hủy</option>
+                                    </select>
+                                    <input type="hidden" name="action" value="update">
+                                </form>
+                            </td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($row['id']); ?>">
+                                    <select name="payment_status" onchange="this.form.submit()">
+                                        <option value="Pending" <?php if ($row['payment_status'] == 'Pending')
+                                            echo 'selected'; ?>>Đang
+                                            chờ</option>
+                                        <option value="Completed" <?php if ($row['payment_status'] == 'Completed')
+                                            echo 'selected'; ?>>
+                                            Hoàn thành</option>
+                                        <option value="Cancelled" <?php if ($row['payment_status'] == 'Cancelled')
                                             echo 'selected'; ?>>Đã
                                             hủy</option>
                                     </select>
