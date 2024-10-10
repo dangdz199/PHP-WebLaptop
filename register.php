@@ -1,16 +1,12 @@
 <?php
 include_once 'init.php';
 include 'includes/db.php'; // Sử dụng PDO cho kết nối
-
 session_start();
-
 $error = ''; // Biến để lưu lỗi nếu có
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
     $email = trim($_POST['email']);
-
     // Kiểm tra xem tên người dùng hoặc email đã tồn tại chưa
     $stmt = $pdo->prepare("SELECT * FROM Users WHERE Username = :username OR Email = :email");
     $stmt->execute(['username' => $username, 'email' => $email]);
@@ -19,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         // Băm mật khẩu
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-
         // Thêm người dùng vào cơ sở dữ liệu
         $stmt = $pdo->prepare("INSERT INTO Users (Username, PasswordHash, Email) VALUES (:username, :passwordHash, :email)");
         $stmt->execute(['username' => $username, 'passwordHash' => $passwordHash, 'email' => $email]);
@@ -27,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 }
-
 include 'includes/header.php';
 ?>
 <div class="container mt-5 p-5">

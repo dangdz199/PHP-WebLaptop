@@ -14,24 +14,26 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 // Initialize error variable
 $error = '';
 
-// Check if the login form is submitted
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Perform the login authentication here
-    $username = $_POST['username'];
-    $password = $_POST['password'];
 
-    // Add your authentication logic here
-    // Example: Check if the username and password match a record in the database
-    if ($username === 'admin' && $password === '123') {
-        // Set the admin session variable
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
+
+    // Truy vấn người dùng từ cơ sở dữ liệu
+    $stmt = $pdo->prepare("SELECT * FROM Users WHERE Username = :username AND IsAdmin = TRUE");
+    $stmt->execute(['username' => $username]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['PasswordHash'])) {
+        // Lưu tên người dùng vào phiên
         $_SESSION['admin_logged_in'] = true;
-
-        // Redirect to the admin dashboard or any other page
-        header("Location: index.php");
-        die(0);
+        // Cập nhật thời gian đăng nhập cuối cùng
+        $stmt = $pdo->prepare("UPDATE Users SET LastLogin = CURRENT_TIMESTAMP WHERE UserID = :userid");
+        $stmt->execute(['userid' => $user['UserID']]);
+        header('Location: index.php'); // Chuyển hướng tới trang quản lý
+        exit;
     } else {
-        // Invalid credentials, show an error message
-        $error = "Invalid username or password";
+        $error = 'Tên đăng nhập hoặc mật khẩu không đúng.';
     }
 }
 

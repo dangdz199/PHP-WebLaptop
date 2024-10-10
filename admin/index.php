@@ -150,7 +150,7 @@ $categoriesStmt = $pdo->query("SELECT * FROM ProductCategory");
 $categories = $categoriesStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Lấy danh sách người dùng
-$userStmt = $pdo->query("SELECT * FROM Users");
+$userStmt = $pdo->query("SELECT * FROM Users WHERE IsAdmin = FALSE");
 $users = $userStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Lấy danh sách tất cả các đơn hàng
@@ -458,8 +458,8 @@ $page = $_GET['page'] ?? 'orders';
         <?php elseif ($page === 'categories'): ?>
             <?php
             // Lấy danh sách loại sản phẩm
-            $categoryStmt = $pdo->query("SELECT * FROM ProductCategory");
-            $categories = $categoryStmt->fetchAll(PDO::FETCH_ASSOC);
+$categoryStmt = $pdo->query("SELECT * FROM ProductCategory");
+$categories = $categoryStmt->fetchAll(PDO::FETCH_ASSOC);
             ?>
             <h2>Loại sản phẩm</h2>
             <div class="card mb-3 mt-3">
@@ -702,8 +702,6 @@ $page = $_GET['page'] ?? 'orders';
             </table>
         <?php elseif ($page === 'users'): ?>
             <h2>Quản lý Người dùng</h2>
-
-
             <div class="card mb-3 mt-3">
                 <div class="card-body">
                     <!-- Form Thêm Người dùng -->
