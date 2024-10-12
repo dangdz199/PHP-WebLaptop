@@ -288,28 +288,22 @@ $page = $_GET['page'] ?? 'orders';
 
         </div>
         <?php
-
         $monthlyData = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
-
         // Tạo mảng labels và dữ liệu doanh thu
         $monthlyLabels = [];
         $monthlyRevenue = [];
-
         foreach ($monthlyData as $row) {
             $monthlyLabels[] = 'Tháng ' . $row['month'];
             $monthlyRevenue[] = $row['revenue'];
         }
-
         // Chuyển đổi sang JSON để sử dụng trong JavaScript
         $monthlyLabels = json_encode($monthlyLabels);
         $monthlyRevenue = json_encode($monthlyRevenue);
         ?>
         <script>
-
             // Dữ liệu cho sản phẩm bán chạy
             const topProducts = <?= json_encode(array_column($topProducts, 'name')) ?>;
             const topProductsSales = <?= json_encode(array_column($topProducts, 'quantity')) ?>;
-
             // Cấu hình biểu đồ cột cho sản phẩm bán chạy
             const ctxTopProducts = document.getElementById('topProductsChart').getContext('2d');
             const topProductsChart = new Chart(ctxTopProducts, {
@@ -332,7 +326,6 @@ $page = $_GET['page'] ?? 'orders';
                     }
                 }
             });
-
             const monthlyLabels = <?= $monthlyLabels ?>;
             const monthlyRevenue = <?= $monthlyRevenue ?>;
 

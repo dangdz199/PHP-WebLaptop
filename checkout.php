@@ -1,7 +1,6 @@
 <?php
 include 'includes/db.php';
 session_start();
-
 include 'includes/header.php';
 
 if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {

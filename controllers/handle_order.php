@@ -130,4 +130,4 @@ header('Location: ' . $jsonResult['payUrl']);
     // Nếu không phải là phương thức POST, chuyển hướng về trang chính
     header('Location: ../index.php');
     exit;
-}
+} 
